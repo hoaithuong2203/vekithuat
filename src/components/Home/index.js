@@ -6,10 +6,10 @@ function Home(props) {
     <div style={styles.container}>
       <div style={styles.buttonsContainer}>
         <Link to="/auth/register" style={styles.buttonLink}>
-          <button style={styles.button}>Register</button>
+          <button style={styles.button}>Đăng kí dự thi </button>
         </Link>
         <Link to="/auth/login" style={styles.buttonLink}>
-          <button style={styles.button}>Login</button>
+          <button style={styles.button}>Kiểm tra thông tin </button>
         </Link>
       </div>
     </div>

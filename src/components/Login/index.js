@@ -1,42 +1,51 @@
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom'; // Import Redirect từ react-router-dom
+import { Redirect } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { postLogin } from '../../services/apiService';
 
 function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state để theo dõi trạng thái đăng nhập
-  const [isAdmin, setIsAdmin] = useState(false); // Thêm state để theo dõi trạng thái admin
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const handleLogin = (event) => {
-    event.preventDefault();
+  // const handleLogin = async () => {
+  //   let data = await postLogin(username, password);
+  //   console.log('>>> check data:', data);
+  // };
 
-    // Giả định các giá trị username và password để đăng nhập
-    const mockUsername = '123';
-    const mockPassword = 'p123';
-    const adminUsername = 'admin';
-    const adminPassword = 'admin123';
+  // if (data.isAdmin) {
+  //   setIsAdmin(true)
+  //   return <Redirect to="/admin" />;
+  // }
 
-    // Kiểm tra nếu username và password nhập vào khớp với giả định
-    if (username === mockUsername && password === mockPassword) {
-      // Xử lý đăng nhập thành công cho người dùng
-      setIsLoggedIn(true); // Đặt trạng thái đăng nhập thành true
-    } else if (username === adminUsername && password === adminPassword) {
-      // Xử lý đăng nhập thành công cho admin
-      setIsAdmin(true); // Đặt trạng thái admin thành true
-    } else {
-      // Xử lý đăng nhập thất bại
-      setError('Username hoặc mật khẩu không chính xác');
+  // if (data.isLoggedIn) {
+  //   setIsLoggedIn(true)
+  //   return <Redirect to="/user" />;
+  // }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      // const req = [];
+      let response = await postLogin({ username, password }); // Gọi API để đăng nhập
+      console.log(response.data.accessToken);
+      console.log(response.data.role.includes('ROLE_ADMIN'));
+      if (response?.data?.accessToken) {
+        window.localStorage.setItem('accessToken', response?.data?.accessToken);
+      }
+      if (response.data.role && response.data.role.includes('ROLE_ADMIN')) {
+        setIsAdmin(true);
+      }
+      setIsLoggedIn(true);
+    } catch (error) {
+      setError('Tên đăng nhập hoặc mật khẩu không chính xác.');
     }
   };
-
-  // Nếu đăng nhập thành công với admin, Redirect đến màn hình admin
   if (isAdmin) {
     return <Redirect to="/admin" />;
   }
 
-  // Nếu đăng nhập thành công, Redirect đến màn hình user
   if (isLoggedIn) {
     return <Redirect to="/user" />;
   }
@@ -45,7 +54,7 @@ function Login(props) {
     <div style={styles.container}>
       <div style={styles.overlay}></div>
       <div style={styles.loginBox}>
-        <h2>Login</h2>
+        <h2>ĐĂNG NHẬP</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <form onSubmit={handleLogin}>
           <div style={styles.inputGroup}>
@@ -71,7 +80,7 @@ function Login(props) {
             />
           </div>
           <button type="submit" style={styles.button}>
-            Login
+            Đăng nhập
           </button>
         </form>
       </div>

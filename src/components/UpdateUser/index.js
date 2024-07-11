@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
-import './Register.css';
+import './UpdateUser.css';
 
-const Register = () => {
+const UpdateUser = () => {
   const defaultAvatar = process.env.PUBLIC_URL + '/avatar-trang-1.jpg';
   const defaultFrontCccdImage = process.env.PUBLIC_URL + '/mattruoc.jpg';
   const defaultBackCccdImage = process.env.PUBLIC_URL + '/matsau.jpg';
@@ -38,8 +38,8 @@ const Register = () => {
   const [parentMobileNumber, setParentMobileNumber] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
-  const [paymentId, setPaymentId] = useState('');
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [updateUser, setUpdateUser] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleFullNameChange = (e) => {
     setFullName(e.target.value);
@@ -136,135 +136,58 @@ const Register = () => {
   const handleBackCccdImgUpload = (e) => {
     readURL(e, setBackCccdImgUrl);
   };
-
-  const handlePaymentSdo = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    try {
-      // Gọi API thanh toán ở đây
-      const data = {
-        amount: 400000,
-        no: cccd,
-      };
-      const response = await axios.get('http://127.0.0.1:8000/api/v1/payment/return', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.data.status !== 'OK') {
-        throw new Error('Payment failed');
-      }
-      console.log('Payment successful:', response.data);
-
-      window.open(response.data.url, '_blank');
-
-      // Xử lý sau khi thanh toán thành công, ví dụ: chuyển hướng người dùng đến trang xác nhận thanh toán
-
-      alert('Đã thanh toán thành công!');
-    } catch (error) {
-      console.error('Lỗi khi thanh toán:', error);
-      alert('Thanh toán thất bại. Vui lòng thử lại sau.');
-    }
   };
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const accessToken = window.localStorage.getItem('accessToken');
+        if (!accessToken) {
+          throw new Error('No access token found');
+        }
 
-    try {
-      // Gọi API thanh toán ở đây
-      const data = {
-        amount: 400000,
-        no: cccd,
-      };
-      const response = await axios.post('http://127.0.0.1:8000/api/v1/payment/create', data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.data.status !== 'OK') {
-        throw new Error('Payment failed');
+        const response = await axios.put(
+          'http://localhost:8000/api/v1/user/update',
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        console.log('Response data:', response.data);
+
+        if (response.data) {
+          setUpdateUser(response.data);
+        } else {
+          console.error('Error fetching users:', response.data.EM);
+        }
+      } catch (error) {
+        if (error.response) {
+          // Server responded with a status other than 200 range
+          console.error('Server error:', error.response);
+          setError(
+            new Error(
+              `Error ${error.response.status}: ${error.response.data.message || error.response.statusText}`,
+            ),
+          );
+        } else if (error.request) {
+          // Request was made but no response was received
+          console.error('Network error:', error.request);
+          setError(new Error('Network error: No response received from server.'));
+        } else {
+          // Something happened in setting up the request
+          console.error('Error:', error.message);
+          setError(error);
+        }
       }
-      console.log('Payment successful:', response.data);
+    };
 
-      window.open(response.data.url, '_blank');
-
-      // Xử lý sau khi thanh toán thành công, ví dụ: chuyển hướng người dùng đến trang xác nhận thanh toán
-      alert('Đã thanh toán thành công!');
-    } catch (error) {
-      console.error('Lỗi khi thanh toán:', error);
-      alert('Thanh toán thất bại. Vui lòng thử lại sau.');
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const data = new FormData();
-    data.append('fullName', fullName);
-    data.append('gender', gender);
-    data.append('dateOfBirth', dob);
-    data.append('birthPlace', bornIn);
-    data.append('identifyNo', cccd);
-    data.append('confirmCccd', confirmCccd);
-    data.append('issueDate', cccdIssueDate);
-    data.append('issuePlace', issuedBy);
-    data.append('email', email);
-    data.append('confirmEmail', confirmEmail);
-    data.append('phoneNumber', mobileNumber);
-    data.append('confirmMobileNumber', confirmMobileNumber);
-    data.append('placeOfPermanent', permanentAddress);
-    data.append('receiverName', recipientFullName);
-    data.append('receiverPhone', recipientPhoneNumber);
-    data.append('parentPhone', parentMobileNumber);
-    data.append('graduationYear', graduationYear);
-    data.append('receiverAddress', recipientAddress);
-    data.append('amount', '400000');
-    data.append('image', userImgUrl.file);
-    data.append('frontImage', frontCccdImgUrl.file);
-    data.append('backImage', backCccdImgUrl.file);
-    console.log(data);
-
-    data.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/v1/auth/register', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log('Registration successful!', response.data);
-      if (response.data.status !== 'OK') {
-        throw new Error('Payment failed');
-      }
-      console.log('Payment successful:', response.data);
-
-      window.open(response.data.url, '_blank');
-      // Xử lý sau khi thanh toán thành công, ví dụ: chuyển hướng người dùng đến trang xác nhận thanh toán
-      // alert('Đã thanh toán thành công!');
-      setPaymentSuccess(true);
-      // Xử lý các bước tiếp theo sau khi đăng ký thành công
-    } catch (error) {
-      console.error('Registration failed!', error);
-      // Xử lý lỗi nếu đăng ký không thành công
-    }
-  };
-  if (paymentSuccess) {
-    return <Redirect to="/" />;
-  }
-
-  // useEffect(() => {
-  //   // Thực hiện fetch dữ liệu từ API khi component được mount
-  //   async function fetchData() {
-  //     try {
-  //       const response = await axios.get('http://localhost:3001/api/v1/auth/register');
-  //       setData(response.data);
-  //     } catch (error) {
-  //       console.log('Failed to fetch data:', error);
-  //     }
-  //   }
-  //   fetchData();
-  // }, []);
+    fetchUsers();
+  }, []);
 
   return (
     <div className="main-content">
@@ -667,36 +590,21 @@ const Register = () => {
             />
           </div>
         </div>
-        <button
-          type="button"
-          className="btn btn-custom"
-          onClick={handleSubmit}
-          style={{
-            backgroundColor: '#002a5c',
-            color: 'white',
-            borderRadius: '5px',
-            width: '200px',
-            height: '80px',
-            marginBottom: '20px',
-          }}
-        >
-          Thanh Toán Lệ Phí Thi
-        </button>
       </div>
       <div className="image-note"></div>
 
-      {/* <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <button
           type="submit"
           className="btn btn-primary"
           style={{ backgroundColor: '#002a5c', color: 'white' }}
           onClick={handleSubmit}
         >
-          Lưu và Xác nhận Đăng ký
+          Cập nhật thông tin
         </button>
-      </div> */}
+      </div>
     </div>
   );
 };
 
-export default Register;
+export default UpdateUser;

@@ -5,8 +5,9 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import UserDetail from './components/UserDetail';
+import UserInfo from './components/UserInfo';
 import Admin from './components/Admin';
+import UpdateUser from './components/UpdateUser';
 
 function App() {
   return (
@@ -17,8 +18,9 @@ function App() {
           <Route exact path="/" component={Home} />
           <Route path="/auth/login" component={Login} />
           <Route path="/auth/register" component={Register} />
-          <Route path="/user" component={UserDetail} />
+          <Route path="/user" component={UserInfo} />
           <Route path="/admin" component={Admin} />
+          <Route path="/updateuser" component={UpdateUser} />
         </Switch>
       </Router>
       <Footer />
